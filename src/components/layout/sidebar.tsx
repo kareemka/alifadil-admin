@@ -14,6 +14,7 @@ interface SidebarProps {
 const navItems = [
     { name: 'لوحة التحكم', path: '/dashboard', icon: 'dashboard' },
     { name: 'الأعمال', path: '/shows', icon: 'movie' },
+    { name: 'الإعلانات', path: '/commercials', icon: 'campaign' },
     { name: 'معرض الصور', path: '/backstage', icon: 'camera_enhance' },
     { name: 'الأخبار', path: '/news', icon: 'newspaper' },
     { name: 'الإعدادات', path: '/settings', icon: 'settings' },

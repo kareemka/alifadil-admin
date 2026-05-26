@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface Show {
+interface Commercial {
   id: number;
   title?: string | null;
   coverImage?: string | null;
@@ -49,7 +49,7 @@ interface Show {
   sortOrder?: number | null;
 }
 
-interface ShowFormData {
+interface CommercialFormData {
   title: string;
   releaseYear: string;
   meta: string;
@@ -66,7 +66,7 @@ interface ShowFormData {
 
 const LIMIT = 10;
 
-const EMPTY_FORM: ShowFormData = {
+const EMPTY_FORM: CommercialFormData = {
   title: '',
   releaseYear: '',
   meta: '',
@@ -96,8 +96,8 @@ function getImageUrl(image?: string | null) {
   return `${API_URL}/uploads/${image}`;
 }
 
-function getPrimaryImage(show: Show) {
-  return getImageUrl(show.coverImage || show.thumbnailImage);
+function getPrimaryImage(commercial: Commercial) {
+  return getImageUrl(commercial.coverImage || commercial.thumbnailImage);
 }
 
 function getStillsArray(stills?: string[] | string | null) {
@@ -184,8 +184,8 @@ function MultiImagePicker({
   );
 }
 
-export default function ShowsPage() {
-  const [shows, setShows] = useState<Show[]>([]);
+export default function CommercialsPage() {
+  const [commercials, setCommercials] = useState<Commercial[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -196,9 +196,9 @@ export default function ShowsPage() {
   const [currentCover, setCurrentCover] = useState<string | null>(null);
   const [removeCover, setRemoveCover] = useState(false);
   const [currentStills, setCurrentStills] = useState<string[]>([]);
-  const [formData, setFormData] = useState<ShowFormData>({ ...EMPTY_FORM });
+  const [formData, setFormData] = useState<CommercialFormData>({ ...EMPTY_FORM });
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [viewShow, setViewShow] = useState<Show | null>(null);
+  const [viewCommercial, setViewCommercial] = useState<Commercial | null>(null);
 
   useEffect(() => {
     loadData();
@@ -207,8 +207,8 @@ export default function ShowsPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const res = await fetchApi(`/shows?page=${page}&limit=${LIMIT}`);
-      setShows(res.data || []);
+      const res = await fetchApi(`/commercials?page=${page}&limit=${LIMIT}`);
+      setCommercials(res.data || []);
       setTotalPages(res.totalPages || 1);
       setTotal(res.total || 0);
     } catch {
@@ -266,15 +266,15 @@ export default function ShowsPage() {
       body.append('stills', file);
     });
 
-    const toastId = toast.loading(editingId ? 'جاري تحديث العمل...' : 'جاري إضافة العمل...');
+    const toastId = toast.loading(editingId ? 'جاري تحديث الإعلان...' : 'جاري إضافة الإعلان...');
 
     try {
       if (editingId) {
-        await fetchApi(`/shows/${editingId}`, { method: 'PUT', body });
-        toast.success('تم تحديث العمل بنجاح', { id: toastId });
+        await fetchApi(`/commercials/${editingId}`, { method: 'PUT', body });
+        toast.success('تم تحديث الإعلان بنجاح', { id: toastId });
       } else {
-        await fetchApi('/shows', { method: 'POST', body });
-        toast.success('تم إضافة العمل بنجاح', { id: toastId });
+        await fetchApi('/commercials', { method: 'POST', body });
+        toast.success('تم إضافة الإعلان بنجاح', { id: toastId });
       }
 
       resetForm();
@@ -285,26 +285,26 @@ export default function ShowsPage() {
     }
   };
 
-  const handleEdit = (show: Show) => {
-    setEditingId(show.id);
+  const handleEdit = (commercial: Commercial) => {
+    setEditingId(commercial.id);
     setFormData({
-      title: show.title || '',
-      releaseYear: show.releaseYear || '',
-      meta: show.meta || '',
-      synopsis: show.synopsis || '',
-      director: show.director || '',
-      writer: show.writer || '',
-      dop: show.dop || '',
-      music: show.music || '',
-      editor: show.editor || '',
-      cast: show.cast || '',
-      youtubeTrailerLink: show.youtubeTrailerLink || '',
-      sortOrder: show.sortOrder?.toString() || '0',
+      title: commercial.title || '',
+      releaseYear: commercial.releaseYear || '',
+      meta: commercial.meta || '',
+      synopsis: commercial.synopsis || '',
+      director: commercial.director || '',
+      writer: commercial.writer || '',
+      dop: commercial.dop || '',
+      music: commercial.music || '',
+      editor: commercial.editor || '',
+      cast: commercial.cast || '',
+      youtubeTrailerLink: commercial.youtubeTrailerLink || '',
+      sortOrder: commercial.sortOrder?.toString() || '0',
     });
     setFiles({ stills: [] });
-    setCurrentCover(show.coverImage || null);
+    setCurrentCover(commercial.coverImage || null);
     setRemoveCover(false);
-    setCurrentStills(getStillsArray(show.stills));
+    setCurrentStills(getStillsArray(commercial.stills));
     setIsFormOpen(true);
   };
 
@@ -313,8 +313,8 @@ export default function ShowsPage() {
 
     const toastId = toast.loading('جاري الحذف...');
     try {
-      await fetchApi(`/shows/${deleteId}`, { method: 'DELETE' });
-      toast.success('تم حذف العمل بنجاح', { id: toastId });
+      await fetchApi(`/commercials/${deleteId}`, { method: 'DELETE' });
+      toast.success('تم حذف الإعلان بنجاح', { id: toastId });
       setDeleteId(null);
       loadData();
     } catch {
@@ -322,12 +322,12 @@ export default function ShowsPage() {
     }
   };
 
-  const updateField = (field: keyof ShowFormData, value: string) => {
+  const updateField = (field: keyof CommercialFormData, value: string) => {
     setFormData((current) => ({ ...current, [field]: value }));
   };
 
   const renderInput = (
-    field: keyof ShowFormData,
+    field: keyof CommercialFormData,
     label: string,
     placeholder = '',
     type = 'text',
@@ -344,7 +344,7 @@ export default function ShowsPage() {
     </div>
   );
 
-  const renderTextarea = (field: keyof ShowFormData, label: string, placeholder = '') => (
+  const renderTextarea = (field: keyof CommercialFormData, label: string, placeholder = '') => (
     <div className="space-y-2">
       <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">{label}</label>
       <textarea
@@ -356,26 +356,26 @@ export default function ShowsPage() {
     </div>
   );
 
-  const detailRows = viewShow
+  const detailRows = viewCommercial
     ? [
-      { label: 'Meta', value: viewShow.meta },
-      { label: 'الإخراج', value: viewShow.director },
-      { label: 'التأليف', value: viewShow.writer },
-      { label: 'التصوير', value: viewShow.dop },
-      { label: 'الموسيقى', value: viewShow.music },
-      { label: 'المونتاج', value: viewShow.editor },
-      { label: 'البطولة', value: viewShow.cast },
-    ].filter((item) => item.value)
+        { label: 'Meta', value: viewCommercial.meta },
+        { label: 'الإخراج', value: viewCommercial.director },
+        { label: 'التأليف', value: viewCommercial.writer },
+        { label: 'التصوير', value: viewCommercial.dop },
+        { label: 'الموسيقى', value: viewCommercial.music },
+        { label: 'المونتاج', value: viewCommercial.editor },
+        { label: 'البطولة', value: viewCommercial.cast },
+      ].filter((item) => item.value)
     : [];
-  const viewStills = getStillsArray(viewShow?.stills);
+  const viewStills = getStillsArray(viewCommercial?.stills);
 
   return (
     <AdminLayout>
       <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">إدارة الأعمال</h1>
-            <p className="text-gray-400 text-sm mt-1">إضافة وتعديل تفاصيل الأعمال الفنية في المنصة</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">إدارة الإعلانات</h1>
+            <p className="text-gray-400 text-sm mt-1">إضافة وتعديل تفاصيل الإعلانات في المنصة</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -384,12 +384,12 @@ export default function ShowsPage() {
               className="bg-primary hover:bg-primary-dark text-black px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20 active:scale-95 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
-              <span>إضافة عمل جديد</span>
+              <span>إضافة إعلان جديد</span>
             </button>
 
             <div className="bg-primary/10 border border-primary/20 px-4 py-2.5 rounded-xl">
               <span className="text-primary font-bold text-lg">{total}</span>
-              <span className="text-gray-400 text-sm mr-2">إجمالي الأعمال</span>
+              <span className="text-gray-400 text-sm mr-2">إجمالي الإعلانات</span>
             </div>
           </div>
         </div>
@@ -397,7 +397,7 @@ export default function ShowsPage() {
         <div className="bg-[#1a1a1a] rounded-2xl border border-white/5 shadow-2xl overflow-hidden">
           <div className="bg-white/5 px-6 py-4 border-b border-white/5 flex items-center justify-between">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Film className="w-5 h-5 text-primary" /> قائمة الأعمال الحالية
+              <Film className="w-5 h-5 text-primary" /> قائمة الإعلانات الحالية
             </h2>
           </div>
 
@@ -413,15 +413,15 @@ export default function ShowsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {shows.map((show) => {
-                  const imageUrl = getPrimaryImage(show);
+                {commercials.map((commercial) => {
+                  const imageUrl = getPrimaryImage(commercial);
 
                   return (
-                    <tr key={show.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <tr key={commercial.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-6 py-4">
                         <div className="relative w-24 h-16 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex-shrink-0 mx-auto">
                           {imageUrl ? (
-                            <Image src={imageUrl} alt={show.title || 'Work'} fill className="object-cover" unoptimized />
+                            <Image src={imageUrl} alt={commercial.title || 'Work'} fill className="object-cover" unoptimized />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center text-white/10">
                               <Film className="w-6 h-6" />
@@ -431,38 +431,38 @@ export default function ShowsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="text-sm font-bold text-white">{show.title || 'بدون عنوان'}</span>
-                          <span className="text-xs text-gray-500">{show.releaseYear || show.meta || '-'}</span>
+                          <span className="text-sm font-bold text-white">{commercial.title || 'بدون عنوان'}</span>
+                          <span className="text-xs text-gray-500">{commercial.releaseYear || commercial.meta || '-'}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className="text-xs text-gray-400 truncate max-w-[150px] inline-block">
-                          {show.youtubeTrailerLink || '-'}
+                          {commercial.youtubeTrailerLink || '-'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className="px-2 py-1 rounded bg-white/5 border border-white/10 text-xs font-bold text-white">
-                          {show.sortOrder ?? 0}
+                          {commercial.sortOrder ?? 0}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => setViewShow(show)}
+                            onClick={() => setViewCommercial(commercial)}
                             className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
                             title="عرض التفاصيل"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleEdit(show)}
+                            onClick={() => handleEdit(commercial)}
                             className="p-2 rounded-lg bg-white/5 text-amber-500/70 hover:text-amber-500 hover:bg-amber-500/10 transition-all cursor-pointer"
                             title="تعديل"
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => setDeleteId(show.id)}
+                            onClick={() => setDeleteId(commercial.id)}
                             className="p-2 rounded-lg bg-white/5 text-red-500/70 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
                             title="حذف"
                           >
@@ -476,12 +476,12 @@ export default function ShowsPage() {
               </tbody>
             </table>
 
-            {shows.length === 0 && !isLoading && (
+            {commercials.length === 0 && !isLoading && (
               <div className="py-20 text-center flex flex-col items-center justify-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-gray-600">
                   <Film className="w-8 h-8" />
                 </div>
-                <p className="text-gray-500 font-medium">لا توجد أعمال مضافة حالياً في هذا القسم</p>
+                <p className="text-gray-500 font-medium">لا توجد إعلانات مضافة حالياً في هذا القسم</p>
               </div>
             )}
 
@@ -509,10 +509,11 @@ export default function ShowsPage() {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-10 h-10 rounded-xl text-sm font-bold transition-all cursor-pointer ${p === page
+                    className={`w-10 h-10 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                      p === page
                         ? 'bg-primary text-black'
                         : 'bg-[#1a1a1a] border border-white/5 text-gray-400 hover:border-white/20'
-                      }`}
+                    }`}
                   >
                     {p}
                   </button>
@@ -528,165 +529,159 @@ export default function ShowsPage() {
               </button>
             </div>
             <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">
-              معروض {shows.length} من أصل {total} عمل فني
+              معروض {commercials.length} من أصل {total} إعلان
             </p>
           </div>
         )}
       </div>
 
-      <Dialog
-        open={isFormOpen}
-        onOpenChange={(open) => {
-          setIsFormOpen(open);
-          if (!open) resetForm();
-        }}
-      >
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border border-white/10 text-white p-0 rounded-2xl">
+<Dialog
+  open={isFormOpen}
+  onOpenChange={(open) => {
+    setIsFormOpen(open);
+    if (!open) resetForm();
+  }}
+>
+  <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border-white/10 text-white p-0 rounded-2xl">
 
-          {/* HEADER */}
-          <div className="px-6 py-5 border-b border-white/10 flex items-center gap-2">
-            <Film className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-bold">
-              {editingId ? 'تعديل العمل الفني' : 'إضافة عمل فني جديد'}
-            </h2>
-          </div>
+    {/* HEADER */}
+    <div className="px-6 py-5 border-b border-white/10 flex items-center gap-2">
+      {editingId ? (
+        <Pencil className="w-5 h-5 text-primary" />
+      ) : (
+        <Plus className="w-5 h-5 text-primary" />
+      )}
 
-          {/* FORM */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-8">
+      <h2 className="text-lg font-bold">
+        {editingId ? 'تعديل الإعلان' : 'إضافة إعلان جديد'}
+      </h2>
+    </div>
 
-            {/* TOP SECTION */}
-            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+    {/* FORM */}
+    <form onSubmit={handleSubmit} className="p-6 space-y-8">
 
-              {/* COVER */}
-              <div className="space-y-3">
+      {/* TOP SECTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
 
-                {editingId && currentCover && !removeCover && !files.cover && (
-                  <div className="relative aspect-video overflow-hidden rounded-xl border border-white/10 bg-black/30">
-                    <Image
-                      src={getImageUrl(currentCover)}
-                      alt="cover"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
+        {/* COVER */}
+        <div className="space-y-3">
 
-                    <button
-                      type="button"
-                      onClick={() => setRemoveCover(true)}
-                      className="absolute top-2 left-2 px-2 py-1 text-[10px] bg-red-600 rounded-md"
-                    >
-                      حذف
-                    </button>
-                  </div>
-                )}
-
-                {removeCover && (
-                  <p className="text-[10px] text-amber-400 text-center">
-                    سيتم حذف صورة الغلاف عند الحفظ
-                  </p>
-                )}
-
-                <FilePicker
-                  label={removeCover ? 'رفع غلاف جديد' : 'صورة الغلاف'}
-                  onChange={(file) => {
-                    if (file) setRemoveCover(false);
-                    setFiles((c) => ({ ...c, cover: file || undefined }));
-                  }}
-                />
-
-                <p className="text-[10px] text-gray-500 text-center">
-                  صورة الغلاف تمثل الإعلان بشكل أساسي
-                </p>
-              </div>
-
-              {/* MAIN INPUTS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                {/* 🔥 IMPORTANT FIX: title & meta each row */}
-                {renderInput('title', 'اسم العمل', 'مثال: ولاية بطيخ')}
-
-                {renderInput('releaseYear', 'سنة الإصدار', 'مثال: 2026')}
-
-                <div className="md:col-span-2">
-                  {renderInput('meta', 'Meta', 'مثال: العراق | مسلسل | 2026')}
-                </div>
-
-                {renderInput('sortOrder', 'ترتيب العرض', '0', 'number')}
-
-                <div className="md:col-span-2">
-                  {renderInput('youtubeTrailerLink', 'رابط الفيديو YouTube', 'https://youtube.com/...')}
-                </div>
-
-              </div>
-            </div>
-
-            {/* SYNOPSIS */}
-            <div>
-              {renderTextarea('synopsis', 'القصة / الملخص')}
-            </div>
-
-            {/* CREW */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {renderInput('director', 'الإخراج')}
-              {renderInput('writer', 'التأليف')}
-              {renderInput('dop', 'التصوير')}
-              {renderInput('music', 'الموسيقى')}
-              {renderInput('editor', 'المونتاج')}
-              {renderInput('cast', 'البطولة')}
-            </div>
-
-            {/* STILLS */}
-            <div>
-              <MultiImagePicker
-                label="صور من العمل"
-                files={files.stills}
-                currentImages={currentStills}
-                onChange={(selectedFiles) =>
-                  setFiles((c) => ({ ...c, stills: selectedFiles }))
-                }
+          {editingId && currentCover && !removeCover && !files.cover && (
+            <div className="relative aspect-video overflow-hidden rounded-xl border border-white/10 bg-black/30">
+              <Image
+                src={getImageUrl(currentCover)}
+                alt="cover"
+                fill
+                className="object-cover"
+                unoptimized
               />
-            </div>
-
-            {editingId && currentStills.length > 0 && files.stills.length === 0 && (
-              <p className="text-[10px] text-gray-500">
-                يمكنك ترك الصور للحفاظ على الحالية أو رفع صور جديدة لاستبدالها
-              </p>
-            )}
-
-            {/* FOOTER */}
-            <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/10">
 
               <button
                 type="button"
-                onClick={() => setIsFormOpen(false)}
-                className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white transition"
+                onClick={() => setRemoveCover(true)}
+                className="absolute top-2 left-2 px-2 py-1 text-[10px] bg-red-600 rounded-md"
               >
-                إلغاء
+                حذف
               </button>
-
-              <button
-                type="submit"
-                className="px-6 py-2 rounded-xl bg-primary text-black font-bold hover:bg-primary/80 transition flex items-center gap-2"
-              >
-                {editingId ? <Pencil className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                {editingId ? 'حفظ التغييرات' : 'إضافة العمل'}
-              </button>
-
             </div>
+          )}
 
-          </form>
-        </DialogContent>
-      </Dialog>
+          <FilePicker
+            label="صورة الغلاف"
+            onChange={(file) => {
+              if (file) setRemoveCover(false);
+              setFiles((c) => ({ ...c, cover: file || undefined }));
+            }}
+          />
 
-      <Dialog open={!!viewShow} onOpenChange={() => setViewShow(null)}>
+          <p className="text-[10px] text-gray-500 text-center">
+            صورة واضحة تعبر عن الإعلان
+          </p>
+        </div>
+
+        {/* MAIN FIELDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          {/* كل واحد بسطر كامل */}
+          <div className="md:col-span-2">
+            {renderInput('title', 'اسم الإعلان')}
+          </div>
+
+          <div className="md:col-span-2">
+            {renderInput('meta', 'Meta')}
+          </div>
+
+          {/* باقي الحقول */}
+          {renderInput('releaseYear', 'السنة')}
+          {renderInput('sortOrder', 'الترتيب', '', 'number')}
+
+          <div className="md:col-span-2">
+            {renderInput('youtubeTrailerLink', 'رابط الفيديو')}
+          </div>
+
+        </div>
+      </div>
+
+      {/* DESCRIPTION */}
+      <div>
+        {renderTextarea('synopsis', 'الوصف')}
+      </div>
+
+      {/* CREW */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {renderInput('director', 'الإخراج')}
+        {renderInput('writer', 'التأليف')}
+        {renderInput('dop', 'التصوير')}
+        {renderInput('music', 'الموسيقى')}
+        {renderInput('editor', 'المونتاج')}
+        {renderInput('cast', 'البطولة')}
+      </div>
+
+      {/* STILLS */}
+      <div>
+        <MultiImagePicker
+          label="صور الإعلان"
+          files={files.stills}
+          currentImages={currentStills}
+          onChange={(files) =>
+            setFiles((c) => ({ ...c, stills: files }))
+          }
+        />
+      </div>
+
+      {/* FOOTER */}
+      <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/10">
+
+        <button
+          type="button"
+          onClick={() => setIsFormOpen(false)}
+          className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white transition"
+        >
+          إلغاء
+        </button>
+
+        <button
+          type="submit"
+          className="px-6 py-2 rounded-xl bg-primary text-black font-bold hover:bg-primary/80 transition flex items-center gap-2"
+        >
+          {editingId ? <Pencil className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {editingId ? 'حفظ التغييرات' : 'إضافة الإعلان'}
+        </button>
+
+      </div>
+    </form>
+  </DialogContent>
+</Dialog>
+
+      <Dialog open={!!viewCommercial} onOpenChange={() => setViewCommercial(null)}>
         <DialogContent className="max-w-3xl bg-[#1a1a1a] border-white/10 text-white p-0 overflow-hidden rounded-2xl">
-          {viewShow && (
+          {viewCommercial && (
             <>
               <div className="relative h-72 w-full">
-                {getPrimaryImage(viewShow) ? (
+                {getPrimaryImage(viewCommercial) ? (
                   <Image
-                    src={getPrimaryImage(viewShow)}
-                    alt={viewShow.title || 'Work'}
+                    src={getPrimaryImage(viewCommercial)}
+                    alt={viewCommercial.title || 'Work'}
                     fill
                     className="object-cover"
                     unoptimized
@@ -698,16 +693,16 @@ export default function ShowsPage() {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] to-transparent" />
                 <button
-                  onClick={() => setViewShow(null)}
+                  onClick={() => setViewCommercial(null)}
                   className="absolute top-4 right-4 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all backdrop-blur-md cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
                 <div className="absolute bottom-6 px-8">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-gray-300 text-xs">{viewShow.releaseYear || viewShow.meta || '-'}</span>
+                    <span className="text-gray-300 text-xs">{viewCommercial.releaseYear || viewCommercial.meta || '-'}</span>
                   </div>
-                  <h3 className="text-3xl font-black">{viewShow.title || 'بدون عنوان'}</h3>
+                  <h3 className="text-3xl font-black">{viewCommercial.title || 'بدون عنوان'}</h3>
                 </div>
               </div>
 
@@ -717,7 +712,7 @@ export default function ShowsPage() {
                     <Info className="w-3 h-3" /> الوصف
                   </h4>
                   <p className="text-gray-400 text-sm leading-relaxed">
-                    {viewShow.synopsis || 'لا يوجد وصف مضاف لهذا العمل.'}
+                    { viewCommercial.synopsis || 'لا يوجد وصف مضاف لهذا الإعلان.'}
                   </p>
                 </div>
 
@@ -726,12 +721,12 @@ export default function ShowsPage() {
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
                       <Calendar className="w-3 h-3" /> تاريخ الإصدار
                     </p>
-                    <p className="text-white font-medium">{viewShow.releaseYear || '-'}</p>
+                    <p className="text-white font-medium">{viewCommercial.releaseYear || '-'}</p>
                   </div>
 
-                  {viewShow.youtubeTrailerLink && (
+                  {viewCommercial.youtubeTrailerLink && (
                     <a
-                      href={viewShow.youtubeTrailerLink}
+                      href={viewCommercial.youtubeTrailerLink}
                       target="_blank"
                       rel="noreferrer"
                       className="bg-red-600/15 border border-red-500/20 p-4 rounded-2xl space-y-1 hover:bg-red-600/25 transition-colors"
@@ -757,7 +752,7 @@ export default function ShowsPage() {
 
                 {viewStills.length > 0 && (
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-primary uppercase tracking-widest">صور من العمل</h4>
+                    <h4 className="text-xs font-bold text-primary uppercase tracking-widest">صور من الإعلان</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {viewStills.map((still, index) => (
                         <div key={`${still}-${index}`} className="relative aspect-video overflow-hidden rounded-xl border border-white/10 bg-black/30">
@@ -779,9 +774,9 @@ export default function ShowsPage() {
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mx-auto mb-4">
               <Trash2 className="w-8 h-8" />
             </div>
-            <DialogTitle className="text-center text-xl font-bold">تأكيد حذف العمل؟</DialogTitle>
+            <DialogTitle className="text-center text-xl font-bold">تأكيد حذف الإعلان؟</DialogTitle>
             <p className="text-center text-gray-400 text-sm mt-2">
-              سيتم حذف هذا العمل وجميع الصور المرتبطة به نهائياً من السيرفر. لا يمكن التراجع عن هذا الإجراء.
+              سيتم حذف هذا الإعلان وجميع الصور المرتبطة به نهائياً من السيرفر. لا يمكن التراجع عن هذا الإجراء.
             </p>
           </DialogHeader>
           <DialogFooter className="flex gap-3 sm:justify-center mt-6">

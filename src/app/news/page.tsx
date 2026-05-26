@@ -15,10 +15,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
+import { slugify } from '@/lib/slug';
 
 interface News {
   id: number;
   title: string;
+  slug: string;
   content: string;
   image: string;
   date: string;
@@ -39,8 +41,11 @@ export default function NewsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
+  const [slugTouched, setSlugTouched] = useState(false);
+
   const [formData, setFormData] = useState({
     title: '',
+    slug: '',
     content: '',
     date: new Date().toISOString().split('T')[0]
   });
@@ -74,6 +79,9 @@ export default function NewsPage() {
     body.append('title', formData.title);
     body.append('content', formData.content);
     body.append('date', new Date(formData.date).toISOString());
+    if (formData.slug.trim()) {
+      body.append('slug', formData.slug.trim());
+    }
 
     if (file) body.append('image', file);
 
@@ -88,7 +96,8 @@ export default function NewsPage() {
           await fetchApi('/news', { method: 'POST', body });
           toast.success('تم إضافة الخبر بنجاح', { id: toastId });
         }
-        setFormData({ title: '', content: '', date: new Date().toISOString().split('T')[0] });
+        setFormData({ title: '', slug: '', content: '', date: new Date().toISOString().split('T')[0] });
+        setSlugTouched(false);
         setFile(null);
         setIsFormOpen(false);
         loadNews();
@@ -101,9 +110,11 @@ export default function NewsPage() {
     setEditingId(news.id);
     setFormData({
       title: news.title,
+      slug: news.slug || '',
       content: news.content,
       date: new Date(news.date).toISOString().split('T')[0]
     });
+    setSlugTouched(true);
     setFile(null);
     setIsFormOpen(true);
   };
@@ -133,7 +144,8 @@ export default function NewsPage() {
           <div className="flex items-center gap-3">
             <button onClick={() => {
               setEditingId(null);
-              setFormData({ title: '', content: '', date: new Date().toISOString().split('T')[0] });
+              setFormData({ title: '', slug: '', content: '', date: new Date().toISOString().split('T')[0] });
+              setSlugTouched(false);
               setFile(null);
               setIsFormOpen(true);
             }} className="bg-primary hover:bg-primary-dark text-black px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20 active:scale-95 cursor-pointer">
@@ -179,6 +191,9 @@ export default function NewsPage() {
                         </div>
                         <div>
                           <p className="font-bold text-white group-hover:text-primary transition-colors">{news.title}</p>
+                          {news.slug && (
+                            <p className="text-[10px] text-primary/80 mt-1 font-mono" dir="rtl">{news.slug}</p>
+                          )}
                           <p className="text-[11px] text-gray-500 line-clamp-1 max-w-[300px] mt-1">{news.content}</p>
                         </div>
                       </div>
@@ -250,11 +265,12 @@ export default function NewsPage() {
         setIsFormOpen(open);
         if (!open) {
           setEditingId(null);
-          setFormData({ title: '', content: '', date: new Date().toISOString().split('T')[0] });
+          setFormData({ title: '', slug: '', content: '', date: new Date().toISOString().split('T')[0] });
+          setSlugTouched(false);
           setFile(null);
         }
       }}>
-        <DialogContent className="max-w-2xl bg-[#1a1a1a] border-white/10 text-white p-6 overflow-hidden rounded-2xl">
+        <DialogContent className="max-w-2xl bg-[#1a1a1a] border-white/10 text-white p-6 overflow-hidden rounded-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Newspaper className="text-primary w-5 h-5" />
@@ -265,7 +281,36 @@ export default function NewsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">عنوان الخبر</label>
-                <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary outline-none transition-all" required />
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => {
+                    const title = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      title,
+                      slug: slugTouched ? prev.slug : slugify(title),
+                    }));
+                  }}
+                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary outline-none transition-all"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">رابط الخبر (Slug)</label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={formData.slug}
+                  onChange={(e) => {
+                    setSlugTouched(true);
+                    setFormData({ ...formData, slug: e.target.value });
+                  }}
+                  placeholder="يُولَّد تلقائياً من العنوان"
+                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-primary outline-none transition-all"
+                />
+                <p className="text-[10px] text-gray-500">يدعم العربية — مثال: علي-فاضل-يقدم-عملاً-جديداً</p>
               </div>
               
               <div className="space-y-2">
